@@ -1,10 +1,14 @@
-FROM jupyter/minimal-notebook
+FROM deepnote/python:3.9
 
-# Install racket
+# The following snippet is licensed under MIT license
+# SEE: https://github.com/jackfirth/racket-docker
 
-USER root
+RUN apt-get update && \
+    apt-get install -y libzmq5
 
-ENV RACKET_VERSION=7.1
+RUN pip install notebook
+
+ENV RACKET_VERSION=8.6
 ENV RACKET_INSTALLER_URL=http://mirror.racket-lang.org/installers/$RACKET_VERSION/racket-$RACKET_VERSION-x86_64-linux-natipkg.sh
 
 RUN wget --output-document=racket-install.sh -q ${RACKET_INSTALLER_URL} && \
@@ -21,8 +25,7 @@ RUN raco pkg config --set catalogs \
     "https://pkgs.racket-lang.org" \
     "https://planet-compats.racket-lang.org"
 
-# Set up racket in jupyter
+RUN raco pkg install --auto iracket
+RUN raco iracket install
 
-RUN apt-get update && apt-get install -y libzmq5
-RUN echo "y\n" | raco pkg install iracket
-RUN racket -l iracket/install
+ENV DEFAULT_KERNEL_NAME "racket"
